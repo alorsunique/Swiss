@@ -7,14 +7,13 @@ import time
 from pathlib import Path
 
 project_dir = Path.cwd().parent
-upper_dir = project_dir.parent.parent
-resources_dir = upper_dir / "PycharmProjects Resources" / "Swiss Resources"
+os.chdir(project_dir)
+
+with open("Resources_Path.txt", "r") as resources_text:
+    resources_dir = Path(resources_text.readline())
 
 input_dir = resources_dir / "Input"
 trier_dir = resources_dir / "Sort"
-
-if not trier_dir.exists():
-    os.mkdir(trier_dir)
 
 while True:  # Checks for the quarter condition
     quarter_condition = str(input(f"Sort by quarter. Y/N: ")).upper()

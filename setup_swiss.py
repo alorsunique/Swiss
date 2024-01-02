@@ -42,3 +42,11 @@ if entry_list[0]:
     cropped_dir = resources_dir / "Cropped"
     if not cropped_dir.exists():
         os.mkdir(cropped_dir)
+
+    trier_dir = resources_dir / "Sort"
+    if not trier_dir.exists():
+        os.mkdir(trier_dir)
+
+    rescale_dir = rescale_dir / "Rescale"
+    if not rescale_dir.exists():
+        os.mkdir(rescale_dir)
