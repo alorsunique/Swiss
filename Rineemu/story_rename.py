@@ -11,8 +11,10 @@ from Modules import modtime
 # Get the directory
 
 project_dir = Path.cwd().parent
-upper_dir = project_dir.parent.parent
-resources_dir = upper_dir / "PycharmProjects Resources" / "Swiss Resources"
+os.chdir(project_dir)
+
+with open("Resources_Path.txt", "r") as resources_text:
+    resources_dir = Path(resources_text.readline())
 
 between_dir = resources_dir / "Between"
 

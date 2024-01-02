@@ -11,15 +11,13 @@ from PIL import Image
 # Get the directory
 
 project_dir = Path.cwd().parent
-upper_dir = project_dir.parent.parent
-resources_dir = upper_dir / "PycharmProjects Resources" / "Swiss Resources"
+os.chdir(project_dir)
+
+with open("Resources_Path.txt", "r") as resources_text:
+    resources_dir = Path(resources_text.readline())
 
 input_dir = resources_dir / "Input"
 between_dir = resources_dir / "Between"
-
-if not input_dir.exists():
-    os.mkdir(input_dir)
-
 if not between_dir.exists():
     os.mkdir(between_dir)
 
