@@ -24,10 +24,10 @@ for entry in input_dir.rglob('*'):
     if entry.is_file():
         image_list.append(entry)
 
+for entry in image_list:
 
+    image_folder = entry.parent.name
 
-
-for entry in input_dir.iterdir():
     working_image = Image.open(entry)
 
     horizontal_size = working_image.size[0]
@@ -45,9 +45,17 @@ for entry in input_dir.iterdir():
 
     print(f"{entry.stem}{entry.suffix} | {(horizontal_size, vertical_size)} | {(new_horizontal, new_vertical)}")
 
-    rescaled_image = working_image.resize((new_horizontal, new_vertical), Image.LANCZOS)
     output_name = f"{entry.stem}_Rescaled{entry.suffix}"
-    output_path = rescale_dir / output_name
+
+    if image_folder != "Input":
+        output_folder = rescale_dir / image_folder
+        if not output_folder.exists():
+            os.mkdir(output_folder)
+    else:
+        output_folder = rescale_dir
+
+    output_path = output_folder / output_name
+    rescaled_image = working_image.resize((new_horizontal, new_vertical), Image.LANCZOS)
     rescaled_image.save(str(output_path))
 
     rescaled_image.close()

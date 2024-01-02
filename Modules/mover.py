@@ -17,7 +17,7 @@ def mover(src_dir, dst_dir, in_indicator):
         folder_ext = file_handle.split(".")
 
         # Prepares the subfolders
-        drop_folder = move_dir / f"{indicator} {folder_ext[1]}"
+        drop_folder = move_dir / f"{indicator}{folder_ext[1]}"
         if not drop_folder.exists():
             os.mkdir(drop_folder)
 
