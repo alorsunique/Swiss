@@ -4,17 +4,13 @@ from pathlib import Path
 from PIL import Image
 
 project_dir = Path.cwd()
-upper_dir = project_dir.parent.parent
-resources_dir = upper_dir / "PycharmProjects Resources" / "Swiss Resources"
+os.chdir(project_dir)
+
+with open("Resources_Path.txt", "r") as resources_text:
+    resources_dir = Path(resources_text.readline())
 
 input_dir = resources_dir / "Input"
 rescale_dir = resources_dir / "Rescale"
-
-if not input_dir.exists():
-    os.mkdir(input_dir)
-
-if not rescale_dir.exists():
-    os.mkdir(rescale_dir)
 
 min_size = 1080
 
