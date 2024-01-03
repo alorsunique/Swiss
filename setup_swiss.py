@@ -46,7 +46,3 @@ if entry_list[0]:
     trier_dir = resources_dir / "Sort"
     if not trier_dir.exists():
         os.mkdir(trier_dir)
-
-    rescale_dir = rescale_dir / "Rescale"
-    if not rescale_dir.exists():
-        os.mkdir(rescale_dir)
