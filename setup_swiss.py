@@ -46,3 +46,19 @@ if entry_list[0]:
     trier_dir = resources_dir / "Sort"
     if not trier_dir.exists():
         os.mkdir(trier_dir)
+
+    screenshot_dir = resources_dir / "Screenshot"
+    if not screenshot_dir.exists():
+        os.mkdir(screenshot_dir)
+
+    screenshot_compile_dir = resources_dir / "Screenshot Compile"
+    if not screenshot_compile_dir.exists():
+        os.mkdir(screenshot_compile_dir)
+
+    stitch_dir = resources_dir / "Stitch"
+    if not stitch_dir.exists():
+        os.mkdir(stitch_dir)
+
+    temporary_workspace_dir = resources_dir / "Temporary Workspace"
+    if not temporary_workspace_dir.exists():
+        os.mkdir(temporary_workspace_dir)
