@@ -88,6 +88,8 @@ print(f"Horiontal Height: {horizontal_height_list}")
 max_width = max(horizontal_width_list)
 max_height = max(horizontal_height_list)
 
+print(f"Horizontal Max Width: {max_width} | Horizontal Max Height: {max_height}")
+
 joined_image = Image.new("RGB", (max_width, max_height * len(horizontal_height_list)))
 
 count = 0
