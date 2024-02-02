@@ -34,6 +34,8 @@ while True:
 
         if session_choice >= 0 and session_choice < len(session_folder_list):
 
+            print(f"Loading frames")
+
             frame_list = []
             for screenshot in session_folder_list[session_choice].iterdir():
                 frame = Image.open(screenshot)
