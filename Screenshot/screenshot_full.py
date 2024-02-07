@@ -5,7 +5,11 @@ from pathlib import Path
 
 from PIL import ImageGrab
 
-project_dir = Path.cwd().parent
+script_path = Path(__file__).resolve()
+
+print(script_path)
+
+project_dir = script_path.parent.parent
 os.chdir(project_dir)
 
 with open("Resources_Path.txt", "r") as resources_text:
