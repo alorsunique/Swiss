@@ -5,11 +5,12 @@
 import os
 from pathlib import Path
 
-project_dir = Path.cwd().parent
+script_path = Path(__file__).resolve()
+project_dir = script_path.parent.parent
 os.chdir(project_dir)
 
 with open("Resources_Path.txt", "r") as resources_text:
-    resources_dir = Path(resources_text.readline())
+    resources_dir = Path(str(resources_text.readline()).replace('"', ''))
 
 input_dir = resources_dir / "Input"
 
@@ -21,7 +22,7 @@ run_condition = input(f"Select Y to perform a run through: ").upper()
 if run_condition == "Y":
 
     for file in input_dir.iterdir():
-        src_file = file
+        source_file = file
 
         title_string = file.stem
         file_handle = file.suffix
@@ -37,13 +38,15 @@ if run_condition == "Y":
         title_string = title_string[:countdown - 1]
 
         new_filename_string = title_string + file_handle
-        new_filename_dir = input_dir / new_filename_string
-        os.rename(src_file, new_filename_dir)
+        new_filename_path = input_dir / new_filename_string
+        os.rename(source_file, new_filename_path)
 
 for file in input_dir.iterdir():
     print(f"Run Through Results: {file.name}")
 
 # Remove strings located at the first and last sections of the file name
+
+print(f"Now removing front and back strings")
 
 front_string_remove = input(f'Front String: ')
 back_string_remove = input(f'Back String: ')
@@ -51,7 +54,7 @@ back_string_remove = input(f'Back String: ')
 for file in input_dir.iterdir():
     print(f"Initial: {file.name}")
 
-    src_file = file
+    source_file = file
 
     title_string = file.stem
     file_handle = file.suffix
@@ -63,6 +66,5 @@ for file in input_dir.iterdir():
     new_filename_string = title_string + file_handle
     print(f"Final: {new_filename_string}")
 
-    new_filename_dir = input_dir / new_filename_string
-
-    os.rename(src_file, new_filename_dir)
+    new_filename_path = input_dir / new_filename_string
+    os.rename(source_file, new_filename_path)
