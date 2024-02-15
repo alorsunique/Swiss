@@ -64,7 +64,7 @@ def main():
 
     indicator = "Geschichte_"
 
-    modtime.prelim_naming(between_dir)
+    modtime.preliminary_naming(between_dir)
     modtime.mod_renaming(between_dir, indicator)
 
     cropped = resources_dir / "Cropped"

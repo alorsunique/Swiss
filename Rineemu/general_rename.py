@@ -20,7 +20,7 @@ move_dir = resources_dir / "Move"
 
 # Applies the preliminary rename
 
-modtime.prelim_naming(input_dir)
+modtime.preliminary_naming(input_dir)
 
 # Performs the final rename to the content
 
