@@ -1,71 +1,76 @@
-import os
-import shutil
-import time
-from datetime import datetime
-from pathlib import Path
+# This script is meant to be called by story_call
 
-from exif import Image
 
-from Modules import modtime
+def main():
+    import os
+    import shutil
+    import time
+    import sys
+    from datetime import datetime
+    from pathlib import Path
 
-# Get the directory
+    from exif import Image
 
-project_dir = Path.cwd().parent
-os.chdir(project_dir)
+    script_path = Path(__file__).resolve()
+    project_dir = script_path.parent.parent
+    os.chdir(project_dir)
+    sys.path.append(str(project_dir))
 
-with open("Resources_Path.txt", "r") as resources_text:
-    resources_dir = Path(resources_text.readline())
+    from Modules import modtime
 
-between_dir = resources_dir / "Between"
+    with open("Resources_Path.txt", "r") as resources_text:
+        resources_dir = Path(str(resources_text.readline()).replace('"', ''))
 
-for image_file in between_dir.iterdir():
-    print(image_file.name)
+    between_dir = resources_dir / "Between"
 
-    image_handle = open(image_file, 'rb')
-    image_object = Image(image_handle)
-    image_handle.close()
+    for image_file in between_dir.iterdir():
+        print(f"Working on: {image_file.name}")
 
-    # In this part of the script, the date and time are extracted
+        image_handle = open(image_file, 'rb')
+        image_object = Image(image_handle)
+        image_handle.close()
 
-    filename_split = image_file.stem.split("_")
+        # In this part of the script, the date and time are extracted
 
-    date_chunk = filename_split[1]
-    time_chunk = filename_split[2]
+        filename_split = image_file.stem.split("_")
 
-    date_chunk = f"{date_chunk[:4]}:{date_chunk[4:6]}:{date_chunk[6:]}"
-    time_chunk = f"{time_chunk[:2]}:{time_chunk[2:4]}:{time_chunk[4:]}"
+        date_chunk = filename_split[1]
+        time_chunk = filename_split[2]
 
-    datetime_info = f"{date_chunk} {time_chunk}"
-    datetime_object = datetime.strptime(datetime_info, '%Y:%m:%d %H:%M:%S')
+        date_chunk = f"{date_chunk[:4]}:{date_chunk[4:6]}:{date_chunk[6:]}"
+        time_chunk = f"{time_chunk[:2]}:{time_chunk[2:4]}:{time_chunk[4:]}"
 
-    print(f"Date Time Info: {datetime_info} | Date Time Object: {datetime_object}")
+        datetime_info = f"{date_chunk} {time_chunk}"
+        datetime_object = datetime.strptime(datetime_info, '%Y:%m:%d %H:%M:%S')
 
-    creation_time = time.mktime(datetime_object.timetuple())
-    modification_time = time.mktime(datetime_object.timetuple())
+        print(f"Date Time Info: {datetime_info} | Date Time Object: {datetime_object}")
 
-    image_object["software"] = "Cropped Story"
-    image_object["datetime_original"] = datetime_info
-    image_object["datetime"] = datetime_info
+        creation_time = time.mktime(datetime_object.timetuple())
+        modification_time = time.mktime(datetime_object.timetuple())
 
-    print(f"EXIF: {image_object.has_exif} | EXIF List: {image_object.list_all()}")
+        image_object["software"] = "Cropped Story"
+        image_object["datetime_original"] = datetime_info
+        image_object["datetime"] = datetime_info
 
-    crop_image_dir = between_dir / f"{image_file.name}"
+        print(f"EXIF: {image_object.has_exif} | EXIF List: {image_object.list_all()}")
 
-    crop_handle = open(crop_image_dir, 'wb')
-    crop_handle.write(image_object.get_file())
-    crop_handle.close()
+        crop_image_dir = between_dir / f"{image_file.name}"
 
-    os.utime(crop_image_dir, (creation_time, modification_time))
+        crop_handle = open(crop_image_dir, 'wb')
+        crop_handle.write(image_object.get_file())
+        crop_handle.close()
 
-indicator = "From_Story_"
+        os.utime(crop_image_dir, (creation_time, modification_time))
 
-modtime.prelim_naming(between_dir)
-modtime.mod_renaming(between_dir, indicator)
+    indicator = "Geschichte_"
 
-crop_dir = resources_dir / "Cropped"
+    modtime.prelim_naming(between_dir)
+    modtime.mod_renaming(between_dir, indicator)
 
-for file in between_dir.iterdir():
-    if file.name not in os.listdir(crop_dir):
-        shutil.move(file, crop_dir)
+    cropped = resources_dir / "Cropped"
 
-shutil.rmtree(between_dir)
+    for file in between_dir.iterdir():
+        if file.name not in os.listdir(cropped):
+            shutil.move(file, cropped)
+
+    shutil.rmtree(between_dir)
