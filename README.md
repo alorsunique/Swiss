@@ -2,4 +2,4 @@
 
 ---
 
-Just some random functions that I use
+Just some random scripts that I use.
