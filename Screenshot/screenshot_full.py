@@ -6,14 +6,11 @@ from pathlib import Path
 from PIL import ImageGrab
 
 script_path = Path(__file__).resolve()
-
-print(script_path)
-
 project_dir = script_path.parent.parent
 os.chdir(project_dir)
 
 with open("Resources_Path.txt", "r") as resources_text:
-    resources_dir = Path(resources_text.readline())
+    resources_dir = Path(str(resources_text.readline()).replace('"', ''))
 
 screenshot_dir = resources_dir / "Screenshot"
 
@@ -51,9 +48,10 @@ count = 0
 
 while count < total_snaps:
     count += 1
+    print(f"Screenshot: {count}")
 
-    screenshot_img = ImageGrab.grab()
+    screenshot_image = ImageGrab.grab()
     current_time = time.strftime("%Y%m%d_%H%M%S")
-    screenshot_img.save(session_folder / f"Screenshot_{str(count).zfill(len_total_snaps)}_{current_time}.png")
+    screenshot_image.save(session_folder / f"Screenshot_{str(count).zfill(len_total_snaps)}_{current_time}.png")
 
     time.sleep(interval_time)

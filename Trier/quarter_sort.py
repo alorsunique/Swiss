@@ -6,11 +6,12 @@ import time
 
 from pathlib import Path
 
-project_dir = Path.cwd().parent
+script_path = Path(__file__).resolve()
+project_dir = script_path.parent.parent
 os.chdir(project_dir)
 
 with open("Resources_Path.txt", "r") as resources_text:
-    resources_dir = Path(resources_text.readline())
+    resources_dir = Path(str(resources_text.readline()).replace('"', ''))
 
 input_dir = resources_dir / "Input"
 trier_dir = resources_dir / "Sort"
@@ -24,9 +25,9 @@ while True:  # Checks for the quarter condition
 
 for file in input_dir.iterdir():
 
-    src_to_move = file
-    mod_time = time.strftime('%Y:%m:%d %H:%M:%S', time.localtime(os.path.getmtime(src_to_move)))
-    print(mod_time)
+    source_to_move = file
+    mod_time = time.strftime('%Y:%m:%d %H:%M:%S', time.localtime(os.path.getmtime(source_to_move)))
+    print(f"Mod time: {mod_time}")
 
     datetime_chunk = mod_time.split(" ")
     date_chunk = datetime_chunk[0].split(":")
@@ -34,9 +35,8 @@ for file in input_dir.iterdir():
     mod_year = date_chunk[0]
     mod_month = int(date_chunk[1].lstrip("0"))
     mod_day = int(date_chunk[2].lstrip("0"))
-    print(mod_year)
-    print(str(mod_month))
-    print(str(mod_day))
+
+    print(f"{mod_year} | {str(mod_month)} | {str(mod_day)}")
 
     year_folder = trier_dir / mod_year
 
@@ -46,7 +46,6 @@ for file in input_dir.iterdir():
     move_folder = year_folder
 
     if quarter_condition == "Y":
-        print("IN")
         # Condition for determining the quarter
 
         if mod_month < 4:
@@ -74,10 +73,10 @@ for file in input_dir.iterdir():
             quarter = "Q4"
 
         quarter_folder = year_folder / f"{mod_year}{quarter}"
-        print(quarter_folder)
+        print(f"Quarter: {quarter_folder.name}")
         if not quarter_folder.exists():
             os.mkdir(quarter_folder)
 
         move_folder = quarter_folder
 
-    shutil.move(src_to_move, move_folder)
+    shutil.move(source_to_move, move_folder)
