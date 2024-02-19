@@ -8,7 +8,7 @@ from pathlib import Path
 resources_dir_text = "Resources_Path.txt"
 
 with open(resources_dir_text, 'a') as writer:
-    writer.close()
+    pass
 
 # Read the directory
 
@@ -16,12 +16,11 @@ entry_list = []
 
 with open(resources_dir_text, 'r') as reader:
     entry_list.append(reader.read())
-    reader.close()
 
 # Create the necessary folders
 
 if entry_list[0]:
-    resources_dir = Path(entry_list[0])
+    resources_dir = Path(str(entry_list[0]).replace('"', ''))
     print(f"Resources Directory: {resources_dir}")
 
     if not resources_dir.exists():
