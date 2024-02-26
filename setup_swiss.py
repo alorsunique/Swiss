@@ -61,3 +61,13 @@ if entry_list[0]:
     temporary_workspace_dir = resources_dir / "Temporary Workspace"
     if not temporary_workspace_dir.exists():
         os.mkdir(temporary_workspace_dir)
+
+    video_folder_dir = resources_dir / "Video"
+
+    if not video_folder_dir.exists():
+        os.mkdir(video_folder_dir)
+
+    workspace_dir = video_folder_dir / "Temporary Workspace"
+
+    if not workspace_dir.exists():
+        os.mkdir(workspace_dir)
