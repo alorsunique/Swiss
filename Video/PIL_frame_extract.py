@@ -1,10 +1,8 @@
-# This script should extract a subclip from a video file
-
-import gc
 import os
 import sys
 from pathlib import Path
 
+from PIL import Image
 from moviepy.editor import VideoFileClip
 
 script_path = Path(__file__).resolve()
@@ -18,22 +16,16 @@ with open("Resources_Path.txt", "r") as resources_text:
 video_folder_dir = resources_dir / "Video"
 workspace_dir = resources_dir / "Temporary Workspace"
 
-# Changes the working directory to the workspace
 os.chdir(workspace_dir)
 
 input_dir = video_folder_dir / "Input"
-if not input_dir.exists():
-    os.mkdir(input_dir)
-
 output_dir = video_folder_dir / "Output"
-if not output_dir.exists():
-    os.mkdir(output_dir)
 
 file_list = []
 
-for file in input_dir.rglob('*'):
-    if file.is_file():
-        file_list.append(file)
+for entry in input_dir.rglob('*'):
+    if entry.is_file():
+        file_list.append(entry)
 
 break_condition = False
 
@@ -53,22 +45,30 @@ while True:
         elif int(choice) < 0 or int(choice) > len(file_list):
             print(f"Out of Bound")
         else:
-            # Creation of clips is done here
 
             selected_file = file_list[choice - 1]
-            print(f"Video: {selected_file.stem}")
-            t_i = int(input(f"Starting Time: "))
-            t_f = int(input(f"Ending Time: "))
 
-            output_name = f"{selected_file.stem}_{str(t_i).zfill(5)}-{str(t_f).zfill(5)}{selected_file.suffix}"
-            output_path = output_dir / output_name
+            output_folder_dir = output_dir / f"{selected_file.stem}"
+            if not output_folder_dir.exists():
+                os.mkdir(output_folder_dir)
 
             video = VideoFileClip(str(selected_file))
-            new_clip = video.subclip(t_i, t_f)
-            new_clip.write_videofile(str(output_path), audio_codec='aac')
-            new_clip.close()
-            video.reader.close()
-            gc.collect()
+            fps = video.fps
+            frames = video.iter_frames(fps=fps)
+            duration = video.duration
+            frame_estimate = int(duration * fps)
+
+            new_frame_list = []
+            frame_count = 0
+
+            for frame in frames:
+                frame_count += 1
+                image = Image.fromarray(frame)
+                output_name = f"{selected_file.stem}_Frame_{str(frame_count).zfill(6)}.jpg"
+                output_path = output_folder_dir / output_name
+                image.save(output_path, quality=100)
+
+            video.close()
 
     except:
         print(f"Did not catch that")
