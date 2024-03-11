@@ -32,7 +32,7 @@ def feature_matching(image_path_1, image_path_2):
         if a.distance < threshold*b.distance:
             match_list.append(a)
 
-    minimum_match = 20
+    minimum_match = 1000
 
     if len(match_list) > minimum_match:
         source_points = np.float32([key_points_1[a.queryIdx].pt for a in match_list]).reshape(-1,1,2)
@@ -51,17 +51,22 @@ def feature_matching(image_path_1, image_path_2):
         warped_border = cv2.perspectiveTransform(image_border,M)
 
         image_2 = cv2.polylines(image_2,[np.int32(warped_border)],True,255,3,cv2.LINE_AA)
+
+        print(f"Potential Match Found: {len(match_list)} Matches")
+
     else:
         print(f"Not enough matches")
         match_mask = None
 
-    color = (0,255,0)
+    match_color = (0, 255, 0)
+    point_color = (255,0,255)
 
-    draw_parameters = dict(matchColor=color, singlePointColor=None,matchesMask=match_mask,flags=cv2.DRAW_MATCHES_FLAGS_NOT_DRAW_SINGLE_POINTS)
-    image_match = cv2.drawMatches(image_1,key_points_1,image_2,key_points_2,match_list,None,**draw_parameters)
+    draw_parameters = dict(matchColor=match_color, singlePointColor=point_color, matchesMask=match_mask,
+                           flags=cv2.DRAW_MATCHES_FLAGS_DEFAULT)
+    image_match = cv2.drawMatches(image_1, key_points_1, image_2, key_points_2, match_list, None, **draw_parameters)
 
     plt.figure()
-    plt.imshow(image_match,"gray")
+    plt.imshow(image_match, "gray")
     plt.show()
     plt.close()
 
