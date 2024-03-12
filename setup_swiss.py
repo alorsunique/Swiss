@@ -71,3 +71,23 @@ if entry_list[0]:
 
     if not workspace_dir.exists():
         os.mkdir(workspace_dir)
+
+    image_compare_dir = resources_dir / "Image Compare"
+
+    if not image_compare_dir.exists():
+        os.mkdir(image_compare_dir)
+
+    image_posted_dir = image_compare_dir / "Posted"
+
+    if not image_posted_dir.exists():
+        os.mkdir(image_posted_dir)
+
+    image_test_source_dir = image_compare_dir / "Test Source"
+
+    if not image_test_source_dir.exists():
+        os.mkdir(image_test_source_dir)
+
+    image_probable_source_dir = image_compare_dir / "Probable Source"
+
+    if not image_probable_source_dir.exists():
+        os.mkdir(image_probable_source_dir)
