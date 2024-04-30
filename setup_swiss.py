@@ -87,12 +87,12 @@ if entry_list[0]:
     if not image_test_source_dir.exists():
         os.mkdir(image_test_source_dir)
 
-    image_probable_source_dir = resources_dir / "Probable Source"
+    image_probable_source_dir = image_compare_dir / "Probable Source"
 
     if not image_probable_source_dir.exists():
         os.mkdir(image_probable_source_dir)
 
-    double_exposure_dir = image_compare_dir / "Double Exposure"
+    double_exposure_dir = resources_dir / "Double Exposure"
 
     if not double_exposure_dir.exists():
         os.mkdir(double_exposure_dir)
