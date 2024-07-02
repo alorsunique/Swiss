@@ -26,7 +26,7 @@ image_pair_list = list(itertools.combinations(image_input_list,2))
 
 print(image_pair_list)
 
-first_ratio = 0.3
+first_ratio = 0.75
 
 def channel_merge(first_image_channel, second_image_channel, first_ratio):
     first_array = np.array(first_image_channel)
@@ -66,7 +66,15 @@ for pair in image_pair_list:
 
     merge_image = Image.merge("RGB",(red_channel,green_channel,blue_channel))
 
-    merge_image.show()
+    #merge_image.show()
+
+    first_name = first_image_path.stem
+    second_name = second_image_path.stem
+
+    merged_name = f"{first_name}_{second_name}_{first_ratio}.jpg"
+    merged_path = double_out_dir / merged_name
+
+    merge_image.save(merged_path)
 
     first_image.close()
     second_image.close()
