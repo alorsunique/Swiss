@@ -147,6 +147,11 @@ modification_time = time.mktime(earliest_time_instance)
 mod_time_string = time.strftime("%Y%m%d_%H%M%S",earliest_time_instance)
 
 output_path = stitch_dir / f"Stitch_{mod_time_string}.jpg"
+
+if output_path.exists():
+    os.remove(output_path)
+
+
 joined_image.save(output_path)
 
 # Modify the modification time
