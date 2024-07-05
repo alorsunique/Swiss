@@ -29,9 +29,10 @@ for file in multi_post_list:
     if file.stem[-5:] != "UTC_1":
         deletable_list.append(file)
 
-print(f"Deletable: {deletable_list}")
+print(f"Deletable Count: {len(deletable_list)}")
 
 # Deletes all deletables
 
 for file in deletable_list:
     os.remove(file)
+
