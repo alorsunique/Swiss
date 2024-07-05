@@ -21,19 +21,18 @@ if temporary_workspace_dir.exists():
     shutil.rmtree(temporary_workspace_dir)
 os.mkdir(temporary_workspace_dir)
 
-temporary_image_source_dir = temporary_workspace_dir / "Image Source"
-os.mkdir(temporary_image_source_dir)
+temporary_input_dir = temporary_workspace_dir / "Input"
+os.mkdir(temporary_input_dir)
 
 for image_file in input_dir.iterdir():
-    copy_path = temporary_image_source_dir / image_file.name
+    copy_path = temporary_input_dir / image_file.name
     shutil.copy2(image_file,copy_path)
 
-
-# Perform preliminary rename here
+# Perform preliminary rename on copied images here
 
 file_list = []
 
-for image_file in temporary_image_source_dir.iterdir():
+for image_file in temporary_input_dir.iterdir():
     file_list.append(image_file)
 
 image_amount = len(file_list)
@@ -41,16 +40,18 @@ count = 0
 for entry in file_list:
     new_name = f"{str(image_amount-count).zfill(4)}.jpg"
     count += 1
-    new_path = temporary_image_source_dir / new_name
+    new_path = temporary_input_dir / new_name
     os.rename(entry,new_path)
 
+# Take note of pixel and mod time information of the images
+
+# New file list after renaming
 file_list = []
 width_list = []
 height_list = []
-
 mod_time_list = []
 
-for image_file in temporary_image_source_dir.iterdir():
+for image_file in temporary_input_dir.iterdir():
 
     mod_time_list.append(time.localtime(os.path.getmtime(image_file)))
 
@@ -65,19 +66,22 @@ earliest_time_instance = sorted(mod_time_list)[0]
 print(f"Width: {width_list}")
 print(f"Height: {height_list}")
 
-temporary_image_horizontal_dir = temporary_workspace_dir / "Horizontal Output"
-os.mkdir(temporary_image_horizontal_dir)
+temporary_horizontal_dir = temporary_workspace_dir / "Horizontal"
+os.mkdir(temporary_horizontal_dir)
 
 max_width = max(width_list)
 max_height = max(height_list)
 
 print(f"Max Width: {max_width} | Max Height: {max_height}")
 
+# Create the horizontal slices
+
 joined_image = Image.new("RGB", (max_width * 3, max_height))
 
 count = 0
 vertical_count = 0
 total_width = 0
+
 while count < len(file_list):
     current_image = Image.open(file_list[count])
     width = width_list[count]
@@ -93,14 +97,16 @@ while count < len(file_list):
     if count % 3 == 0:
         total_width = 0
         vertical_count += 1
-        output_path = temporary_image_horizontal_dir / f"Horizontal_{str(vertical_count).zfill(4)}.jpg"
+        output_path = temporary_horizontal_dir / f"Horizontal_{str(vertical_count).zfill(4)}.jpg"
         joined_image.save(output_path)
 
 horizontal_file_list = []
 horizontal_width_list = []
 horizontal_height_list = []
 
-for image_file in temporary_image_horizontal_dir.iterdir():
+# Merge the horizontal images
+
+for image_file in temporary_horizontal_dir.iterdir():
     horizontal_file_list.append(image_file)
     current_image = Image.open(image_file)
     width, height = current_image.size
