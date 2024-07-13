@@ -13,30 +13,23 @@ os.chdir(project_dir)
 with open("Resources_Path.txt", "r") as resources_text:
     resources_dir = Path(resources_text.readline())
 
-input_dir = resources_dir / "Input"
+
 rescale_dir = resources_dir / "Rescale"
-
-
 era_folder = Path(str(input(f"Path: ")).replace('"', ''))
 
-image_list = []
+# Take note of all images in the path provided
 
+image_list = []
 for entry in era_folder.rglob('*'):
     if entry.is_file():
         image_list.append(entry)
 
-print(image_list)
 
 for image in image_list:
-    print(image)
-
     working_image = Image.open(image)
 
     horizontal_size = working_image.size[0]
     vertical_size = working_image.size[1]
-
-    print(horizontal_size)
-    print(vertical_size)
 
     if horizontal_size < vertical_size:
         square_ratio = vertical_size / horizontal_size
@@ -61,8 +54,15 @@ for image in image_list:
 
             cropped_image = working_image.crop((left_pixel, 0, right_pixel, vertical_size))
 
-        output_name = f"{image.stem}_Crop.{image.suffix}"
-        output_path = rescale_dir / output_name
+        relative_path = image.relative_to(era_folder)
+
+        output_name = image.name
+        output_dir = rescale_dir / relative_path.parent / "Cropped"
+
+        if not output_dir.exists():
+            os.makedirs(output_dir)
+
+        output_path = output_dir / output_name
 
         cropped_image.save(output_path)
 
