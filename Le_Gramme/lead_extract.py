@@ -52,7 +52,7 @@ if copy_confirmation:
         output_path = output_dir / output_name
 
         if not output_path.exists():
-            print(f"{str(relative_path.parent).ljust(40)} | {str(entry.name).ljust(40)} | Copied")
+            print(f"{str(relative_path.parent).ljust(40)} | {str(entry.name).ljust(40)} | Copying")
             shutil.copy2(entry, output_path)
 
         else:

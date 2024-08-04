@@ -3,57 +3,62 @@ from pathlib import Path
 
 from PIL import Image
 
-script_path = Path(__file__).resolve()
-project_dir = script_path.parent
-os.chdir(project_dir)
 
-with open("Resources_Path.txt", "r") as resources_text:
-    resources_dir = Path(str(resources_text.readline()).replace('"', ''))
+def tree_resize_image(input_dir, rescale_dir, minimum_size):
+    min_size = minimum_size
+    image_list = []
+    image_extensions = ('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp')
 
-input_dir = resources_dir / "Input"
-rescale_dir = resources_dir / "Rescale"
+    for entry in input_dir.rglob('*'):
+        if entry.is_file and str(entry).endswith(image_extensions):
+            image_list.append(entry)
 
-min_size = 1080
+    for entry in image_list:
+        working_image = Image.open(entry)
 
-image_list = []
+        horizontal_size = working_image.size[0]
+        vertical_size = working_image.size[1]
 
-for entry in input_dir.rglob('*'):
-    if entry.is_file():
-        image_list.append(entry)
+        min_pixel_size = min(working_image.size)
 
-for entry in image_list:
+        if min_pixel_size > min_size:
+            rescale_factor = min_pixel_size / min_size
+            new_horizontal = int(horizontal_size / rescale_factor)
+            new_vertical = int(vertical_size / rescale_factor)
+        else:
+            new_horizontal = horizontal_size
+            new_vertical = vertical_size
 
-    image_folder = entry.parent.name
+        print(f"{entry.name} | {(horizontal_size, vertical_size)} | {(new_horizontal, new_vertical)}")
 
-    working_image = Image.open(entry)
+        relative_dir = entry.relative_to(input_dir).parent
+        output_dir = rescale_dir / relative_dir
 
-    horizontal_size = working_image.size[0]
-    vertical_size = working_image.size[1]
+        if not output_dir.exists():
+            os.makedirs(output_dir)
 
-    min_pixel_size = min(working_image.size)
+        output_path = output_dir / entry.name
+        rescaled_image = working_image.resize((new_horizontal, new_vertical), Image.LANCZOS)
+        rescaled_image.save(str(output_path))
 
-    if min_pixel_size > min_size:
-        rescale_factor = min_pixel_size / min_size
-        new_horizontal = int(horizontal_size / rescale_factor)
-        new_vertical = int(vertical_size / rescale_factor)
-    else:
-        new_horizontal = horizontal_size
-        new_vertical = vertical_size
+        rescaled_image.close()
+        working_image.close()
 
-    print(f"{entry.stem}{entry.suffix} | {(horizontal_size, vertical_size)} | {(new_horizontal, new_vertical)}")
+        mod_time = os.path.getmtime(entry)
+        os.utime(output_path, (mod_time, mod_time))
 
-    output_name = f"{entry.stem}_Rescaled{entry.suffix}"
 
-    if image_folder != "Input":
-        output_folder = rescale_dir / image_folder
-        if not output_folder.exists():
-            os.mkdir(output_folder)
-    else:
-        output_folder = rescale_dir
+if __name__ == "__main__":
+    script_path = Path(__file__).resolve()
+    project_dir = script_path.parent
+    os.chdir(project_dir)
 
-    output_path = output_folder / output_name
-    rescaled_image = working_image.resize((new_horizontal, new_vertical), Image.LANCZOS)
-    rescaled_image.save(str(output_path))
+    with open("Resources_Path.txt", "r") as resources_text:
+        resources_dir = Path(str(resources_text.readline()).replace('"', ''))
 
-    rescaled_image.close()
-    working_image.close()
+    input_dir = resources_dir / "Input"
+    rescale_dir = resources_dir / "Rescale"
+
+    minimum_size = 1080
+
+    tree_resize_image(input_dir, rescale_dir, minimum_size)
