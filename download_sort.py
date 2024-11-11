@@ -1,9 +1,38 @@
 import os
 import shutil
+import time
 from pathlib import Path
+
 import pandas as pd
 
-def download_sort(download_path, download_sink, exception_list):
+
+def preliminary_prefix(file_path):
+    source_file = file_path
+
+    file_name = source_file.name
+    mod_time = time.strftime('%Y:%m:%d %H:%M:%S', time.localtime(os.path.getmtime(source_file)))
+
+    datetime_chunk = mod_time.split(" ")
+    date_chunk = datetime_chunk[0].split(":")
+    time_chunk = datetime_chunk[1].split(":")
+    rename_date = ""
+    rename_time = ""
+    for chunk in date_chunk:
+        rename_date += chunk
+    for chunk in time_chunk:
+        rename_time += chunk
+
+    modified_name = f"{rename_date}_{rename_time}_{file_name}"
+    parent_dir = source_file.parent
+
+    modified_path = parent_dir / modified_name
+
+    os.rename(source_file, modified_path)
+
+    return modified_path
+
+
+def download_sort(download_source_dir, download_sink_dir, exception_list):
     # Document file extensions
     document_extensions = [
         '.doc', '.docx', '.pdf', '.txt', '.rtf', '.odt', '.xls', '.xlsx',
@@ -28,45 +57,48 @@ def download_sort(download_path, download_sink, exception_list):
         '.m4v', '.mpeg', '.3gp'
     ]
 
-    folder_list = ["Documents", "Pictures", "Music", "Videos", "Mixed"]
+    sink_folder_list = ["Documents", "Pictures", "Music", "Videos", "Everything Else"]
 
-    exception_set = set(exception_list)
-
-    print("Exception Set")
-    print(exception_set)
-    print("----")
-
-    for folder in folder_list:
-        test_dir = download_sink / folder
+    for folder in sink_folder_list:
+        test_dir = download_sink_dir / folder
         if not test_dir.exists():
             os.mkdir(test_dir)
 
-    content_list = []
+    download_content_list = []
 
-    for content in download_path.iterdir():
-        content_list.append(content)
+    for entry in download_source_dir.iterdir():
+        download_content_list.append(entry)
 
-    content_set = set(content_list)
+    content_set = set(download_content_list)
+    exception_set = set(exception_list)
 
     valid_set = content_set - exception_set
-    print(valid_set)
 
     valid_list = sorted(list(valid_set))
 
     for entry in valid_list:
 
-        if entry.is_file():
-            print(f"File: {entry}")
+        modified_path = preliminary_prefix(entry)
 
-            relative_path = entry.relative_to(download_path)
-            move_path = download_sink / "Documents" / relative_path
+        if modified_path.is_file():
 
-            shutil.move(entry, move_path)
+            file_extension = modified_path.suffix
+            if file_extension in document_extensions:
+                move_path = download_sink_dir / "Documents"
+            elif file_extension in image_extensions:
+                move_path = download_sink_dir / "Pictures"
+            elif file_extension in music_extensions:
+                move_path = download_sink_dir / "Music"
+            elif file_extension in video_extensions:
+                move_path = download_sink_dir / "Videos"
+            else:
+                move_path = download_sink_dir / "Everything Else"
 
-        elif entry.is_dir():
-            print(f"Dir: {entry}")
+
         else:
-            print("Neither")
+            move_path = download_sink_dir / "Everything Else"
+
+        shutil.move(modified_path, move_path)
 
 
 if __name__ == "__main__":
@@ -77,16 +109,14 @@ if __name__ == "__main__":
     with open("Resources_Path.txt", "r") as resources_text:
         resources_dir = Path(str(resources_text.readline()).replace('"', ''))
 
-    source_download_pointer_text = resources_dir / "download_pointer_source.txt"
-    sink_download_pointer_text = resources_dir / "download_pointer_sink.txt"
+    download_pointer_path = resources_dir / "Download Pointer.txt"
+    with open(download_pointer_path, "r") as download_pointer:
+        download_dir_list = download_pointer.read().splitlines()
 
-    with open(source_download_pointer_text, "r") as download_text:
-        download_source_dir = Path(str(download_text.readline()).replace('"', ''))
+    download_source_dir = Path(str(download_dir_list[0]).replace('"', ''))
+    download_sink_dir = Path(str(download_dir_list[1]).replace('"', ''))
 
-    with open(sink_download_pointer_text, "r") as download_text:
-        download_sink_dir = Path(str(download_text.readline()).replace('"', ''))
-
-    exception_download_excel_path =resources_dir / "Download Exception.xlsx"
+    exception_download_excel_path = resources_dir / "Download Exception.xlsx"
 
     if not exception_download_excel_path.exists():
         dataframe = pd.DataFrame([], columns=['Exception'])
@@ -99,27 +129,9 @@ if __name__ == "__main__":
 
     sorted_exception_list = sorted(list(initial_exception_set))
 
+    processed_exception_list = []
 
+    for entry in sorted_exception_list:
+        processed_exception_list.append(Path(str(entry).replace('"', '')))
 
-    #exception_download_text = resources_dir / "exception_list.txt"
-
-    exception_list = sorted_exception_list
-
-    print(exception_list)
-
-    #with open(exception_download_text, "r") as download_text:
-
-        #except_read_list = download_text.readlines()
-        #print(except_read_list)
-        #print(len(except_read_list))
-
-        #for entry in except_read_list:
-            #modified_entry = str(entry).replace('"', '').rstrip('\n')
-            #modified_entry = Path(modified_entry)
-
-            #exception_list.append(modified_entry)
-
-    #print(download_source_dir)
-
-    download_sort(download_source_dir, download_sink_dir, exception_list)
-    print(download_sink_dir)
+    download_sort(download_source_dir, download_sink_dir, processed_exception_list)
