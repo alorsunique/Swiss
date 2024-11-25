@@ -25,10 +25,26 @@ with open(sd_pointer_text, "r") as sd_pointer_lines:
 creation_dir = Path(str(path_list[0]).replace('\n', '').replace('"', ''))
 output_dir = Path(str(path_list[1]).replace('\n', '').replace('"', ''))
 
-current_time = time.time()
-sleep_second = 60 - (current_time % 60)
 
+def get_next_run_time():
+    """Calculate the next time to run the main function at the nearest 10-minute mark, including seconds."""
+    current_time = time.time()
+    # Get the current minutes and seconds
+    minutes = int(time.strftime("%M", time.localtime(current_time)))
+    seconds = int(time.strftime("%S", time.localtime(current_time)))
+
+    # Calculate how many minutes to add to reach the next 10-minute mark
+    next_minutes = ((minutes // 10) + 1) * 10
+    if next_minutes == 60:  # Special case for the top of the hour
+        next_run_time = current_time + ((60 - minutes) * 60 - seconds)
+    else:
+        next_run_time = current_time + ((next_minutes - minutes) * 60 - seconds)
+
+    return next_run_time
+
+sleep_second = get_next_run_time() - time.time()
 time.sleep(sleep_second)
+print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
 while True:
 
@@ -45,7 +61,11 @@ while True:
 
     modtime.mod_renaming(creation_dir, indicator)
 
-    current_time = time.time()
-    sleep_second = 60 - (current_time % 60)
+    sleep_second = get_next_run_time() - time.time()
     time.sleep(sleep_second)
-    time.sleep(180)
+    print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+    #current_time = time.time()
+    #sleep_second = 60 - (current_time % 60)
+    #time.sleep(sleep_second)
+    #time.sleep(180)
