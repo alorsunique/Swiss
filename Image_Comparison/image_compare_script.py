@@ -18,9 +18,64 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+import cv2
+
+def resize_cv2_image(cv2_image, minimum_size):
+    """
+    Resizes a cv2 image object so that the smaller dimension is equal to minimum_size,
+    while maintaining the aspect ratio.
+
+    Args:
+        cv2_image (numpy.ndarray): The input image object read using cv2.
+        minimum_size (int): The desired size of the smaller dimension.
+
+    Returns:
+        numpy.ndarray: The resized image as a cv2 image object.
+    """
+    height, width = cv2_image.shape[:2]  # Get the image dimensions
+
+    # Determine scaling factor
+    if min(height, width) > minimum_size:
+        if height < width:
+            scale_factor = minimum_size / height
+        else:
+            scale_factor = minimum_size / width
+
+        # Calculate new dimensions
+        new_width = int(width * scale_factor)
+        new_height = int(height * scale_factor)
+    else:
+        # Image is already smaller than the minimum size
+        new_width, new_height = width, height
+
+    # Resize the image
+    resized_image = cv2.resize(cv2_image, (new_width, new_height), interpolation=cv2.INTER_LANCZOS4)
+
+    return resized_image
+
+
+
+
+
 def streamline_feature_matching(image_path_1, image_path_2):
-    image_1 = cv2.imread(str(image_path_1), cv2.IMREAD_GRAYSCALE)
-    image_2 = cv2.imread(str(image_path_2), cv2.IMREAD_GRAYSCALE)
+    temp_image_1 = cv2.imread(str(image_path_1), cv2.IMREAD_GRAYSCALE)
+    temp_image_2 = cv2.imread(str(image_path_2), cv2.IMREAD_GRAYSCALE)
+
+    image_1 = resize_cv2_image(temp_image_1,480)
+    image_2 = resize_cv2_image(temp_image_2, 480)
+
+    #cv2.imshow("temp image 1", temp_image_1)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+
+    #cv2.imshow("image 1", image_1)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+
+
+
+
+
 
     sift = cv2.SIFT_create()
 
@@ -60,9 +115,17 @@ def streamline_feature_matching(image_path_1, image_path_2):
 
 
 def streamline_feature_matching_flipped(image_path_1, image_path_2):
-    image_1 = cv2.imread(str(image_path_1), cv2.IMREAD_GRAYSCALE)
-    image_1 = cv2.flip(image_1,1)
-    image_2 = cv2.imread(str(image_path_2), cv2.IMREAD_GRAYSCALE)
+    temp_image_1 = cv2.imread(str(image_path_1), cv2.IMREAD_GRAYSCALE)
+    temp_image_1 = cv2.flip(temp_image_1,1)
+    temp_image_2 = cv2.imread(str(image_path_2), cv2.IMREAD_GRAYSCALE)
+
+    image_1 = resize_cv2_image(temp_image_1, 480)
+    image_2 = resize_cv2_image(temp_image_2, 480)
+
+
+
+
+
 
     sift = cv2.SIFT_create()
 
@@ -112,6 +175,13 @@ def streamline_feature_matching_flipped(image_path_1, image_path_2):
 
 
 def main():
+    now = datetime.now()
+    start_time = now
+    current_time = now.strftime("%H:%M:%S")
+    print(f"Session Start Time: {current_time}")
+
+
+
     script_path = Path(__file__).resolve()
     project_dir = script_path.parent.parent
 
@@ -167,6 +237,14 @@ def main():
             copy_path = image_probable_source_dir / relative_path
 
             shutil.copy2(image_path_2, copy_path)
+
+
+
+    now = datetime.now()
+    finish_time = now
+    current_time = now.strftime("%H:%M:%S")
+    print(f"Session End Time: {current_time}")
+    print(f"Total Session Run Time: {finish_time - start_time}")
 
 
 if __name__ == "__main__":
