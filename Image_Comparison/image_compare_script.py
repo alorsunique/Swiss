@@ -20,6 +20,9 @@ import numpy as np
 
 import cv2
 
+
+min_size = 1080
+
 def resize_cv2_image(cv2_image, minimum_size):
     """
     Resizes a cv2 image object so that the smaller dimension is equal to minimum_size,
@@ -61,8 +64,8 @@ def streamline_feature_matching(image_path_1, image_path_2):
     temp_image_1 = cv2.imread(str(image_path_1), cv2.IMREAD_GRAYSCALE)
     temp_image_2 = cv2.imread(str(image_path_2), cv2.IMREAD_GRAYSCALE)
 
-    image_1 = resize_cv2_image(temp_image_1,480)
-    image_2 = resize_cv2_image(temp_image_2, 480)
+    image_1 = resize_cv2_image(temp_image_1,min_size)
+    image_2 = resize_cv2_image(temp_image_2, min_size)
 
     #cv2.imshow("temp image 1", temp_image_1)
     #cv2.waitKey(0)
@@ -119,8 +122,8 @@ def streamline_feature_matching_flipped(image_path_1, image_path_2):
     temp_image_1 = cv2.flip(temp_image_1,1)
     temp_image_2 = cv2.imread(str(image_path_2), cv2.IMREAD_GRAYSCALE)
 
-    image_1 = resize_cv2_image(temp_image_1, 480)
-    image_2 = resize_cv2_image(temp_image_2, 480)
+    image_1 = resize_cv2_image(temp_image_1, min_size)
+    image_2 = resize_cv2_image(temp_image_2, min_size)
 
 
 
