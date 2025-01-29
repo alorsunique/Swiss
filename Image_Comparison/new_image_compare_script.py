@@ -38,7 +38,7 @@ def tree_resize_image(input_dir, rescale_dir, minimum_size, mirror_bool):
             new_horizontal = horizontal_size
             new_vertical = vertical_size
 
-        print(f"{entry.name} | {(horizontal_size, vertical_size)} | {(new_horizontal, new_vertical)}")
+        # print(f"{entry.name} | {(horizontal_size, vertical_size)} | {(new_horizontal, new_vertical)}")
 
         relative_dir = entry.relative_to(input_dir).parent
         output_dir = rescale_dir / relative_dir
@@ -103,9 +103,9 @@ def load_sift_data(key_point_path, descriptor_path):
     return key_points, descriptor
 
 
-# Feature matching copy pasted code.
+# Feature matching copy paste code.
 # Slightly modified
-def streamline_feature_matching(key_points_1, key_points_2, descriptor_1, descriptor_2):
+def streamline_feature_matching(key_points_replica, key_points_source, descriptor_replica, descriptor_source):
     FLANN_INDEX_KDTREE = 1
     index_parameters = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
     search_parameters = dict(checks=50)
@@ -114,7 +114,7 @@ def streamline_feature_matching(key_points_1, key_points_2, descriptor_1, descri
 
     N_neighbors = 2
 
-    matches = FLANN.knnMatch(descriptor_1, descriptor_2, k=N_neighbors)
+    matches = FLANN.knnMatch(descriptor_replica, descriptor_source, k=N_neighbors)
 
     match_list = []
 
@@ -127,7 +127,7 @@ def streamline_feature_matching(key_points_1, key_points_2, descriptor_1, descri
     minimum_match = 500
 
     # No clue on what this list does
-    value_list = [len(key_points_1), len(key_points_2), len(match_list)]
+    value_list = [len(key_points_replica), len(key_points_source), len(match_list)]
 
     if len(match_list) > minimum_match:
         return True, value_list
@@ -187,7 +187,7 @@ def main():
     os.mkdir(rescaled_replica_flip_dir)
 
     # Rescale the images to not exceed minimum size
-    minimum_size = 1080
+    minimum_size = 960
 
     tree_resize_image(replica_dir, rescaled_replica_dir, minimum_size, False)
     tree_resize_image(source_dir, rescaled_source_dir, minimum_size, False)
@@ -232,75 +232,119 @@ def main():
 
     sift = cv2.SIFT_create()
 
+    count = 0
     for image in replica_image_list:
+        count += 1
+        print(f"Replica: {count}")
         key_path = data_replica_dir / f"Key_{image.stem}.pkl"
         data_path = data_replica_dir / f"Descriptor_{image.stem}.pkl"
 
         save_sift_data(image, key_path, data_path, sift, False)
 
+    count = 0
     for image in source_image_list:
+        count += 1
+        print(f"Source: {count}")
         key_path = data_source_dir / f"Key_{image.stem}.pkl"
         data_path = data_source_dir / f"Descriptor_{image.stem}.pkl"
 
         save_sift_data(image, key_path, data_path, sift, False)
 
-    for image in replica_image_list:
+    count = 0
+    for image in replica_flip_image_list:
+        count += 1
+        print(f"Replica Flip: {count}")
         key_path = data_replica_flip_dir / f"Key_{image.stem}.pkl"
         data_path = data_replica_flip_dir / f"Descriptor_{image.stem}.pkl"
 
-        save_sift_data(image, key_path, data_path, sift, True)
+        save_sift_data(image, key_path, data_path, sift, False)
 
     # Pairs up the replica images and source images
 
     pair_list = itertools.product(replica_image_list, source_image_list)
 
     count = 0
+    max_count = len(replica_image_list) * len(source_image_list)
+
 
     for entry in pair_list:
         count += 1
-        print(f"Pair: {count}")
+        print(f"Pair: {count} | {max_count}")
         replica_image_path = entry[0]
         source_image_path = entry[1]
 
-        replica_key_path = data_replica_dir / f"Key_{replica_image_path.stem}.pkl"
-        replica_descriptor_path = data_replica_dir / f"Descriptor_{replica_image_path.stem}.pkl"
+        replica_mod_time = os.path.getmtime(replica_image_path)
+        source_mod_time = os.path.getmtime(source_image_path)
 
-        source_key_path = data_source_dir / f"Key_{source_image_path.stem}.pkl"
-        source_descriptor_path = data_source_dir / f"Descriptor_{source_image_path.stem}.pkl"
 
-        replica_flip_key_path = data_replica_flip_dir / f"Key_{replica_image_path.stem}.pkl"
-        replica_flip_descriptor_path = data_replica_flip_dir / f"Descriptor_{replica_image_path.stem}.pkl"
+        if source_mod_time > replica_mod_time:
+            print(f"{replica_image_path.name} is older than {source_image_path.name}")
 
-        key_points_1, descriptor_1 = load_sift_data(replica_key_path, replica_descriptor_path)
-        key_points_2, descriptor_2 = load_sift_data(source_key_path, source_descriptor_path)
-        key_points_3, descriptor_3 = load_sift_data(replica_flip_key_path, replica_flip_descriptor_path)
+        else:
 
-        # Compares replica to source
 
-        copy_condition, value_list = streamline_feature_matching(key_points_1, key_points_2, descriptor_1, descriptor_2)
+            replica_key_path = data_replica_dir / f"Key_{replica_image_path.stem}.pkl"
+            replica_descriptor_path = data_replica_dir / f"Descriptor_{replica_image_path.stem}.pkl"
 
-        print(copy_condition)
+            source_key_path = data_source_dir / f"Key_{source_image_path.stem}.pkl"
+            source_descriptor_path = data_source_dir / f"Descriptor_{source_image_path.stem}.pkl"
 
-        if copy_condition:
-            probable_source_file_name = source_image_path.name
-            probable_source_path = source_dir / probable_source_file_name
-            copy_path = probable_dir / probable_source_file_name
+            replica_flip_key_path = data_replica_flip_dir / f"Key_{replica_image_path.stem}.pkl"
+            replica_flip_descriptor_path = data_replica_flip_dir / f"Descriptor_{replica_image_path.stem}.pkl"
 
-            shutil.copy2(probable_source_path, copy_path)
+            replica_key_points, replica_descriptor = load_sift_data(replica_key_path, replica_descriptor_path)
+            source_key_points, source_descriptor = load_sift_data(source_key_path, source_descriptor_path)
+            replica_flip_key_points, replica_flip_descriptor = load_sift_data(replica_flip_key_path,
+                                                                              replica_flip_descriptor_path)
 
-        # Compares replica flip to source
+            # Compares replica to source
 
-        copy_condition, value_list = streamline_feature_matching(key_points_1=key_points_3, key_points_2=key_points_2, descriptor_1=descriptor_3, descriptor_2=descriptor_2)
+            copy_condition, value_list = streamline_feature_matching(replica_key_points, source_key_points,
+                                                                     replica_descriptor, source_descriptor)
 
-        #print(copy_condition)
+            print(copy_condition)
 
-        #if copy_condition:
-            #probable_source_file_name = source_image_path.name
-            #probable_source_path = source_dir / probable_source_file_name
-            #copy_path = probable_dir / probable_source_file_name
+            if copy_condition:
+                probable_source_file_name = source_image_path.name
+                probable_source_path = source_dir / probable_source_file_name
 
-            #shutil.copy2(probable_source_path, copy_path)
+                replica_folder = probable_dir / replica_image_path.stem
 
+                if not replica_folder.exists():
+                    os.mkdir(replica_folder)
+
+                copy_path = replica_folder / probable_source_file_name
+
+                shutil.copy2(probable_source_path, copy_path)
+
+                replica_copy_file_name = f"Replica_{replica_image_path.name}"
+                replica_copy_path = replica_folder / replica_copy_file_name
+
+                replica_original_path = replica_dir / replica_image_path.name
+
+                shutil.copy2(replica_original_path, replica_copy_path)
+
+            # Compares replica flip to source
+
+            copy_condition, value_list = streamline_feature_matching(replica_flip_key_points, source_key_points,
+                                                                     replica_flip_descriptor, source_descriptor)
+
+            print(copy_condition)
+
+            if copy_condition:
+                probable_source_file_name = source_image_path.name
+                probable_source_path = source_dir / probable_source_file_name
+
+                replica_folder = probable_dir / replica_image_path.stem
+
+                if not replica_folder.exists():
+                    os.mkdir(replica_folder)
+
+                copy_path = probable_dir / probable_source_file_name
+
+                shutil.copy2(probable_source_path, copy_path)
+
+    # Takes note of ending time
     now = datetime.now()
     finish_time = now
     current_time = now.strftime("%H:%M:%S")
@@ -309,10 +353,12 @@ def main():
 
     # Removes intermediate folders
 
-    # shutil.rmtree(rescaled_replica_dir)
-    # shutil.rmtree(rescaled_source_dir)
-    # shutil.rmtree(data_replica_dir)
-    # shutil.rmtree(data_source_dir)
+    shutil.rmtree(rescaled_replica_dir)
+    shutil.rmtree(rescaled_source_dir)
+    shutil.rmtree(rescaled_replica_flip_dir)
+    shutil.rmtree(data_replica_dir)
+    shutil.rmtree(data_source_dir)
+    shutil.rmtree(data_replica_flip_dir)
 
 
 if __name__ == "__main__":
