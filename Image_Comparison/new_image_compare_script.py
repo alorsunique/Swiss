@@ -1,6 +1,5 @@
 # This script should find images that are potentially the source of another image
 
-import itertools
 import os
 import pickle
 import shutil
@@ -261,88 +260,108 @@ def main():
 
     # Pairs up the replica images and source images
 
-    pair_list = itertools.product(replica_image_list, source_image_list)
+    # pair_list = itertools.product(replica_image_list, source_image_list)
 
     count = 0
     max_count = len(replica_image_list) * len(source_image_list)
 
+    replica_count = 0
 
-    for entry in pair_list:
-        count += 1
-        print(f"Pair: {count} | {max_count}")
-        replica_image_path = entry[0]
-        source_image_path = entry[1]
+    for replica_image_entry in replica_image_list:
+
+        replica_count += 1
+
+        replica_image_path = replica_image_entry
 
         replica_mod_time = os.path.getmtime(replica_image_path)
-        source_mod_time = os.path.getmtime(source_image_path)
 
+        replica_key_path = data_replica_dir / f"Key_{replica_image_path.stem}.pkl"
+        replica_descriptor_path = data_replica_dir / f"Descriptor_{replica_image_path.stem}.pkl"
 
-        if source_mod_time > replica_mod_time:
-            print(f"{replica_image_path.name} is older than {source_image_path.name}")
+        replica_flip_key_path = data_replica_flip_dir / f"Key_{replica_image_path.stem}.pkl"
+        replica_flip_descriptor_path = data_replica_flip_dir / f"Descriptor_{replica_image_path.stem}.pkl"
 
-        else:
+        replica_key_points, replica_descriptor = load_sift_data(replica_key_path, replica_descriptor_path)
+        replica_flip_key_points, replica_flip_descriptor = load_sift_data(replica_flip_key_path,
+                                                                          replica_flip_descriptor_path)
+        source_count = 0
 
+        for source_image_entry in source_image_list:
 
-            replica_key_path = data_replica_dir / f"Key_{replica_image_path.stem}.pkl"
-            replica_descriptor_path = data_replica_dir / f"Descriptor_{replica_image_path.stem}.pkl"
+            source_count +=1
 
-            source_key_path = data_source_dir / f"Key_{source_image_path.stem}.pkl"
-            source_descriptor_path = data_source_dir / f"Descriptor_{source_image_path.stem}.pkl"
+            count += 1
+            print(f"Pair: {count} | {max_count} | Replica {replica_count} | Source {source_count}")
 
-            replica_flip_key_path = data_replica_flip_dir / f"Key_{replica_image_path.stem}.pkl"
-            replica_flip_descriptor_path = data_replica_flip_dir / f"Descriptor_{replica_image_path.stem}.pkl"
+            source_image_path = source_image_entry
 
-            replica_key_points, replica_descriptor = load_sift_data(replica_key_path, replica_descriptor_path)
-            source_key_points, source_descriptor = load_sift_data(source_key_path, source_descriptor_path)
-            replica_flip_key_points, replica_flip_descriptor = load_sift_data(replica_flip_key_path,
-                                                                              replica_flip_descriptor_path)
+            source_mod_time = os.path.getmtime(source_image_path)
 
-            # Compares replica to source
+            if source_mod_time > replica_mod_time:
+                print(f"{replica_image_path.name} is older than {source_image_path.name}")
 
-            copy_condition, value_list = streamline_feature_matching(replica_key_points, source_key_points,
-                                                                     replica_descriptor, source_descriptor)
+            else:
 
-            print(copy_condition)
+                source_key_path = data_source_dir / f"Key_{source_image_path.stem}.pkl"
+                source_descriptor_path = data_source_dir / f"Descriptor_{source_image_path.stem}.pkl"
 
-            if copy_condition:
-                probable_source_file_name = source_image_path.name
-                probable_source_path = source_dir / probable_source_file_name
+                source_key_points, source_descriptor = load_sift_data(source_key_path, source_descriptor_path)
 
-                replica_folder = probable_dir / replica_image_path.stem
+                # Compares replica to source
 
-                if not replica_folder.exists():
-                    os.mkdir(replica_folder)
+                copy_condition, value_list = streamline_feature_matching(replica_key_points, source_key_points,
+                                                                         replica_descriptor, source_descriptor)
 
-                copy_path = replica_folder / probable_source_file_name
+                print(copy_condition)
 
-                shutil.copy2(probable_source_path, copy_path)
+                if copy_condition:
+                    probable_source_file_name = source_image_path.name
+                    probable_source_path = source_dir / probable_source_file_name
 
-                replica_copy_file_name = f"Replica_{replica_image_path.name}"
-                replica_copy_path = replica_folder / replica_copy_file_name
+                    replica_folder = probable_dir / replica_image_path.stem
 
-                replica_original_path = replica_dir / replica_image_path.name
+                    if not replica_folder.exists():
+                        os.mkdir(replica_folder)
 
-                shutil.copy2(replica_original_path, replica_copy_path)
+                    copy_path = replica_folder / probable_source_file_name
 
-            # Compares replica flip to source
+                    shutil.copy2(probable_source_path, copy_path)
 
-            copy_condition, value_list = streamline_feature_matching(replica_flip_key_points, source_key_points,
-                                                                     replica_flip_descriptor, source_descriptor)
+                    replica_copy_file_name = f"Replica_{replica_image_path.name}"
+                    replica_copy_path = replica_folder / replica_copy_file_name
 
-            print(copy_condition)
+                    replica_original_path = replica_dir / replica_image_path.name
 
-            if copy_condition:
-                probable_source_file_name = source_image_path.name
-                probable_source_path = source_dir / probable_source_file_name
+                    shutil.copy2(replica_original_path, replica_copy_path)
 
-                replica_folder = probable_dir / replica_image_path.stem
+                # Compares replica flip to source
 
-                if not replica_folder.exists():
-                    os.mkdir(replica_folder)
+                copy_condition, value_list = streamline_feature_matching(replica_flip_key_points, source_key_points,
+                                                                         replica_flip_descriptor, source_descriptor)
 
-                copy_path = probable_dir / probable_source_file_name
+                print(copy_condition)
 
-                shutil.copy2(probable_source_path, copy_path)
+                if copy_condition:
+                    probable_source_file_name = source_image_path.name
+                    probable_source_path = source_dir / probable_source_file_name
+
+                    replica_folder = probable_dir / replica_image_path.stem
+
+                    if not replica_folder.exists():
+                        os.mkdir(replica_folder)
+
+                    copy_path = replica_folder / probable_source_file_name
+
+                    shutil.copy2(probable_source_path, copy_path)
+
+                    shutil.copy2(probable_source_path, copy_path)
+
+                    replica_copy_file_name = f"Replica_{replica_image_path.name}"
+                    replica_copy_path = replica_folder / replica_copy_file_name
+
+                    replica_original_path = replica_dir / replica_image_path.name
+
+                    shutil.copy2(replica_original_path, replica_copy_path)
 
     # Takes note of ending time
     now = datetime.now()
