@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 import cv2
+import numpy as np
 from PIL import Image, ImageOps
 
 
@@ -113,6 +114,14 @@ def streamline_feature_matching(key_points_replica, key_points_source, descripto
 
     N_neighbors = 2
 
+    if descriptor_replica is None or descriptor_source is None:
+        print("One of the descriptor arrays is None.")
+        return None, None  # or however you handle a failure case
+
+    if len(descriptor_replica) == 0 or len(descriptor_source) == 0:
+        print("One of the descriptor arrays is empty.")
+        return None, None  # again, whatever fallback makes sense
+
     matches = FLANN.knnMatch(descriptor_replica, descriptor_source, k=N_neighbors)
 
     match_list = []
@@ -132,6 +141,21 @@ def streamline_feature_matching(key_points_replica, key_points_source, descripto
         return True, value_list
     else:
         return False, value_list
+
+
+# Should check the modification date of the image
+def add_replica_mod_time(replica_mod_date_dict, image_file):
+    replica_mod_time = os.path.getmtime(image_file)
+    replica_mod_date_dict[image_file] = replica_mod_time
+    return replica_mod_date_dict
+
+
+def is_solid_color(image_path):
+    test_image = Image.open(image_path).convert('RGB')  # Ensure 3-channel RGB
+    image_array = np.array(test_image)
+
+    # Compare all pixels to the first pixel
+    return np.all(image_array == image_array[0, 0])
 
 
 def main():
@@ -184,6 +208,31 @@ def main():
     if rescaled_replica_flip_dir.exists():
         shutil.rmtree(rescaled_replica_flip_dir)
     os.mkdir(rescaled_replica_flip_dir)
+
+    # Removes unnecessary source images
+
+    replica_mod_date_dict = dict()
+
+    for file in replica_dir.iterdir():
+        print(file)
+        replica_mod_date_dict = add_replica_mod_time(replica_mod_date_dict, file)
+
+    print(replica_mod_date_dict)
+    print(max(replica_mod_date_dict, key=replica_mod_date_dict.get))
+    print(max(replica_mod_date_dict.values()))
+    max_mod_date = max(replica_mod_date_dict.values())
+
+    for file in source_dir.iterdir():
+        probable_mod_time = os.path.getmtime(file)
+        if probable_mod_time > max_mod_date:
+            print(f"Later | Removing: {file}")
+            os.remove(file)
+
+    for file in source_dir.iterdir():
+        print(is_solid_color(file))
+        if is_solid_color(file):
+            print(f"Solid Color | Removing: {file}")
+            os.remove(file)
 
     # Rescale the images to not exceed minimum size
     minimum_size = 960
@@ -288,7 +337,7 @@ def main():
 
         for source_image_entry in source_image_list:
 
-            source_count +=1
+            source_count += 1
 
             count += 1
             print(f"Pair: {count} | {max_count} | Replica {replica_count} | Source {source_count}")

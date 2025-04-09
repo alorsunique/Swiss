@@ -17,14 +17,14 @@ from Modules import modtime
 with open("Resources_Path.txt", "r") as resources_text:
     resources_dir = Path(str(resources_text.readline()).replace('"', ''))
 
-sd_pointer_text = resources_dir / "sd_pointer.txt"
+hiretsuna_pointer_text = resources_dir / "hiretsuna_pointer.txt"
 
-with open(sd_pointer_text, "r") as sd_pointer_lines:
-    path_list = sd_pointer_lines.readlines()
+with open(hiretsuna_pointer_text, "r") as hiretsuna_pointer_lines:
+    path_list = hiretsuna_pointer_lines.readlines()
 
 creation_dir = Path(str(path_list[0]).replace('\n', '').replace('"', ''))
 output_dir = Path(str(path_list[1]).replace('\n', '').replace('"', ''))
-
+refine_dir = Path(str(path_list[2]).replace('\n', '').replace('"', ''))
 
 def get_next_run_time():
     """Calculate the next time to run the main function at the nearest 10-minute mark, including seconds."""
@@ -60,6 +60,14 @@ while True:
         indicator = f"{indicator}_"
 
     modtime.mod_renaming(creation_dir, indicator)
+
+    modtime.preliminary_naming(refine_dir)
+
+    indicator = "Refine"
+    if not indicator == "":
+        indicator = f"{indicator}_"
+
+    modtime.mod_renaming(refine_dir, indicator)
 
     sleep_second = get_next_run_time() - time.time()
     time.sleep(sleep_second)

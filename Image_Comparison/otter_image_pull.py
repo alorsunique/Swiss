@@ -58,7 +58,7 @@ def main():
     for entry in lines:
         image_pull_list.append(entry.strip())
 
-    otter_dir = Path("F:\Projects\Otter")
+    otter_dir = Path("E:\Projects\Otter")
 
     for category in otter_dir.iterdir():
 
