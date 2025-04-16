@@ -122,6 +122,10 @@ def streamline_feature_matching(key_points_replica, key_points_source, descripto
         print("One of the descriptor arrays is empty.")
         return None, None  # again, whatever fallback makes sense
 
+    if len(descriptor_source) < N_neighbors:
+        print(f"Not enough descriptors in source: {len(descriptor_source)} available, but need {N_neighbors}")
+        return None, None
+
     matches = FLANN.knnMatch(descriptor_replica, descriptor_source, k=N_neighbors)
 
     match_list = []
@@ -154,8 +158,17 @@ def is_solid_color(image_path):
     test_image = Image.open(image_path).convert('RGB')  # Ensure 3-channel RGB
     image_array = np.array(test_image)
 
-    # Compare all pixels to the first pixel
-    return np.all(image_array == image_array[0, 0])
+    # Flatten image to 2D array where each row is a pixel (R, G, B)
+    pixels = image_array.reshape(-1, image_array.shape[-1])
+
+    # Get first pixel
+    first_pixel = pixels[0]
+
+    # Iterate and exit early if a different pixel is found
+    for pixel in pixels[1:]:
+        if not np.array_equal(pixel, first_pixel):
+            return False
+    return True
 
 
 def main():
@@ -214,22 +227,26 @@ def main():
     replica_mod_date_dict = dict()
 
     for file in replica_dir.iterdir():
-        print(file)
         replica_mod_date_dict = add_replica_mod_time(replica_mod_date_dict, file)
 
-    print(replica_mod_date_dict)
     print(max(replica_mod_date_dict, key=replica_mod_date_dict.get))
     print(max(replica_mod_date_dict.values()))
     max_mod_date = max(replica_mod_date_dict.values())
 
-    for file in source_dir.iterdir():
-        probable_mod_time = os.path.getmtime(file)
-        if probable_mod_time > max_mod_date:
-            print(f"Later | Removing: {file}")
-            os.remove(file)
+    # Filters through mod time
 
     for file in source_dir.iterdir():
-        print(is_solid_color(file))
+        source_mod_time = os.path.getmtime(file)
+        if source_mod_time > max_mod_date:
+            print(f"Later Modification Time | Removing: {file}")
+            os.remove(file)
+
+
+    count = 0
+
+    for file in source_dir.iterdir():
+        count += 1
+        print(f"Going through source: {count}")
         if is_solid_color(file):
             print(f"Solid Color | Removing: {file}")
             os.remove(file)
