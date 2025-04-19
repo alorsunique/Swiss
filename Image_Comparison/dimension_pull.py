@@ -32,7 +32,7 @@ print(search_input.name)
 parent_dir = dimension_dir / search_input.name
 
 width = 1440
-height = 1440
+height = 1800
 
 
 
@@ -80,20 +80,36 @@ for file in search_input.rglob('*.jpg'):
         returned_width, returned_height = get_shape(file)
         print(f"Width: {returned_width} | Height: {returned_height}")
         if returned_width == width and returned_height == height:
-            shutil.copy2(file, parent_dir)
+            copy_dir = parent_dir / file.relative_to(search_input).parent
+            print(f"copy dir: {copy_dir}")
+            if not copy_dir.exists():
+                os.makedirs(copy_dir)
+            shutil.copy2(file, copy_dir)
 
 for file in search_input.rglob('*.webp'):
     print(file)
-    returned_width, returned_height = get_shape(file)
-    print(f"Width: {returned_width} | Height: {returned_height}")
-    if returned_width == width and returned_height == height:
-        shutil.copy2(file, parent_dir)
+    source_mod_time = os.path.getmtime(file)
+    if not source_mod_time > max_mod_date:
+        returned_width, returned_height = get_shape(file)
+        print(f"Width: {returned_width} | Height: {returned_height}")
+        if returned_width == width and returned_height == height:
+            copy_dir = parent_dir / file.relative_to(search_input).parent
+            print(f"copy dir: {copy_dir}")
+            if not copy_dir.exists():
+                os.makedirs(copy_dir)
+            shutil.copy2(file, copy_dir)
 
 for file in search_input.rglob('*.png'):
     print(file)
-    returned_width, returned_height = get_shape(file)
-    print(f"Width: {returned_width} | Height: {returned_height}")
-    if returned_width == width and returned_height == height:
-        shutil.copy2(file, parent_dir)
+    source_mod_time = os.path.getmtime(file)
+    if not source_mod_time > max_mod_date:
+        returned_width, returned_height = get_shape(file)
+        print(f"Width: {returned_width} | Height: {returned_height}")
+        if returned_width == width and returned_height == height:
+            copy_dir = parent_dir / file.relative_to(search_input).parent
+            print(f"copy dir: {copy_dir}")
+            if not copy_dir.exists():
+                os.makedirs(copy_dir)
+            shutil.copy2(file, copy_dir)
 
 
