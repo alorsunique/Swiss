@@ -1,43 +1,29 @@
 from pathlib import Path
+import time
 
 
-modified_path = Path("D:\Projects\VS Code\Git Clone Stuff\LibreChat")
-unmodified_path = Path("D:\Projects\VS Code\Git Clone Stuff\LibreChat - Copy")
+def get_next_run_time(minute_root, interval_minute):
 
+    current_time = time.time()
 
-print(modified_path)
-print(unmodified_path)
+    # hour_mark = int(time.strftime("%H", time.localtime(current_time)))
+    minute_mark = int(time.strftime("%M", time.localtime(current_time)))
+    second_mark = int(time.strftime("%S", time.localtime(current_time)))
 
+    minute_root = minute_root
+    interval_minute = interval_minute
 
-file_in_mod_list = []
-dir_in_mod_list = []
+    next_minute = minute_root + ((((minute_mark-minute_root) // interval_minute) + 1) * interval_minute)
 
+    if next_minute >= 60:
+        # This resets it back to the hour
+        next_run_time = current_time + ((60 - minute_mark) * 60 - second_mark)
+    else:
+        next_run_time = current_time + ((next_minute - minute_mark) * 60 - second_mark)
 
-for entry in modified_path.rglob('*'):
-    if entry.is_file():
-        file_in_mod_list.append(entry.relative_to(modified_path))
-    elif entry.is_dir():
-        dir_in_mod_list.append(entry.relative_to(modified_path))
+    return next_run_time
 
-
-print(file_in_mod_list)
-print(dir_in_mod_list)
-
-
-
-
-file_in_unmod_list = []
-dir_in_unmod_list = []
-
-
-for entry in unmodified_path.rglob('*'):
-    if entry.is_file():
-        file_in_unmod_list.append(entry.relative_to(unmodified_path))
-    elif entry.is_dir():
-        dir_in_unmod_list.append(entry.relative_to(unmodified_path))
-
-file_mod_set = set(file_in_mod_list)
-file_unmod_set = set(file_in_unmod_list)
-
-dif_set = file_mod_set.intersection(file_unmod_set)
-print(dif_set)
+if __name__ == "__main__":
+    next_run_time = get_next_run_time(0,2)
+    print(next_run_time)
+    print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(next_run_time)))

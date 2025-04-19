@@ -23,26 +23,36 @@ with open(hiretsuna_pointer_text, "r") as hiretsuna_pointer_lines:
     path_list = hiretsuna_pointer_lines.readlines()
 
 creation_dir = Path(str(path_list[0]).replace('\n', '').replace('"', ''))
-output_dir = Path(str(path_list[1]).replace('\n', '').replace('"', ''))
 refine_dir = Path(str(path_list[2]).replace('\n', '').replace('"', ''))
 
-def get_next_run_time():
-    """Calculate the next time to run the main function at the nearest 10-minute mark, including seconds."""
-    current_time = time.time()
-    # Get the current minutes and seconds
-    minutes = int(time.strftime("%M", time.localtime(current_time)))
-    seconds = int(time.strftime("%S", time.localtime(current_time)))
+output_dir = Path(str(path_list[1]).replace('\n', '').replace('"', ''))
 
-    # Calculate how many minutes to add to reach the next 10-minute mark
-    next_minutes = ((minutes // 10) + 1) * 10
-    if next_minutes == 60:  # Special case for the top of the hour
-        next_run_time = current_time + ((60 - minutes) * 60 - seconds)
+
+def get_next_run_time(minute_root, interval_minute):
+    current_time = time.time()
+
+    # hour_mark = int(time.strftime("%H", time.localtime(current_time)))
+    minute_mark = int(time.strftime("%M", time.localtime(current_time)))
+    second_mark = int(time.strftime("%S", time.localtime(current_time)))
+
+    minute_root = minute_root
+    interval_minute = interval_minute
+
+    next_minute = minute_root + ((((minute_mark - minute_root) // interval_minute) + 1) * interval_minute)
+
+    if next_minute >= 60:
+        # This resets it back to the hour
+        next_run_time = current_time + ((60 - minute_mark) * 60 - second_mark)
     else:
-        next_run_time = current_time + ((next_minutes - minutes) * 60 - seconds)
+        next_run_time = current_time + ((next_minute - minute_mark) * 60 - second_mark)
 
     return next_run_time
 
-sleep_second = get_next_run_time() - time.time()
+
+minute_root = 0
+interval_minute = 5
+
+sleep_second = get_next_run_time(minute_root, interval_minute) - time.time()
 time.sleep(sleep_second)
 print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
@@ -69,11 +79,9 @@ while True:
 
     modtime.mod_renaming(refine_dir, indicator)
 
-    sleep_second = get_next_run_time() - time.time()
+    for entry in output_dir.iterdir():
+        shutil.rmtree(entry)
+
+    sleep_second = get_next_run_time(minute_root, interval_minute) - time.time()
     time.sleep(sleep_second)
     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-
-    #current_time = time.time()
-    #sleep_second = 60 - (current_time % 60)
-    #time.sleep(sleep_second)
-    #time.sleep(180)
