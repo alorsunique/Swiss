@@ -31,8 +31,8 @@ print(search_input.name)
 
 parent_dir = dimension_dir / search_input.name
 
-width = 1440
-height = 1800
+width = 1080
+height = 720
 
 
 

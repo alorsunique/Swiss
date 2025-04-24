@@ -50,7 +50,7 @@ def get_next_run_time(minute_root, interval_minute):
 
 
 minute_root = 0
-interval_minute = 5
+interval_minute = 3
 
 sleep_second = get_next_run_time(minute_root, interval_minute) - time.time()
 time.sleep(sleep_second)
