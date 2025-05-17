@@ -22,6 +22,7 @@ def fractal_sierpinski(point_1, point_2):
     print(f"Difference Vector: {difference_vector} | Magnitude: {mag_difference_vector} | Angle: {angle_from_x}")
 
 
+    # Koch list
     fractal_point_1 = (0,0)
     fractal_point_2 = (1/3,0)
     fractal_point_3 = (0.5,(np.sqrt(3)/2)/3)
@@ -29,6 +30,14 @@ def fractal_sierpinski(point_1, point_2):
     fractal_point_5 = (1,0)
 
     point_list = [fractal_point_1,fractal_point_2,fractal_point_3,fractal_point_4,fractal_point_5]
+
+    fractal_point_1 = (0,0)
+    fractal_point_2 = (0.5, (0.5/(np.sqrt(3)/2))*0.5)
+    fractal_point_3 = (0.5, -(0.5/(np.sqrt(3)/2))*0.5)
+    fractal_point_4 = (1,0)
+
+    point_list = [fractal_point_1,fractal_point_2,fractal_point_3,fractal_point_4]
+
 
     # Rotate point first
 
@@ -86,7 +95,7 @@ plt.show()
 
 
 
-iteration = 1
+iteration = 7
 
 third_point = (2,0)
 
@@ -103,7 +112,7 @@ while count < len(working_points)-1:
 
 print(pair_working_points)
 
-iteration_max = 4
+iteration_max = 7
 
 iteration_count = 0
 
@@ -111,15 +120,11 @@ iteration_count = 0
 
 working_points = [first_point, second_point]
 
-first_point = (-0.5,0)
-half_first = (0,0)
-second_point = (0.5,0)
-half_second = ((0.5+0)/2, (np.sqrt(3)/2)/2)
-third_point = (0,np.sqrt(3)/2)
-half_third = ((-0.5+0)/2, (np.sqrt(3)/2)/2)
+working_points = [(-0.5,0),(0.5,0),(0,np.sqrt(3)/2),(-0.5,0)]
 
+working_points = [(-0.5,0),(0.5,0)]
 
-working_points = [first_point, half_first,second_point, half_second,third_point, half_third, first_point]
+points_processed = 0
 
 while iteration_count < iteration_max:
     iteration_count += 1
@@ -142,6 +147,8 @@ while iteration_count < iteration_max:
     working_points = []
 
     for pair in pair_working_points:
+
+        points_processed += 1
 
         translated_work_point = fractal_sierpinski(pair[0],pair[1])
 
@@ -181,3 +188,5 @@ plt.gca().set_aspect('equal', adjustable='box')
 
 plt.plot(x_list,y_list)
 plt.show()
+
+print(points_processed)
