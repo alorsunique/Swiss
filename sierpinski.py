@@ -31,13 +31,18 @@ def fractal_sierpinski(point_1, point_2):
 
     point_list = [fractal_point_1,fractal_point_2,fractal_point_3,fractal_point_4,fractal_point_5]
 
+    #fractal_point_1 = (0,0)
+    #fractal_point_2 = (0.5, (0.5/(np.sqrt(3)/2))*0.5)
+    #fractal_point_3 = (0.5, -(0.5/(np.sqrt(3)/2))*0.5)
+    #fractal_point_4 = (1,0)
+
+    #point_list = [fractal_point_1,fractal_point_2,fractal_point_3,fractal_point_4]
+
     fractal_point_1 = (0,0)
-    fractal_point_2 = (0.5, (0.5/(np.sqrt(3)/2))*0.5)
-    fractal_point_3 = (0.5, -(0.5/(np.sqrt(3)/2))*0.5)
-    fractal_point_4 = (1,0)
+    fractal_point_2 = (0.5, 0.25)
+    fractal_point_3 = (1,0)
 
-    point_list = [fractal_point_1,fractal_point_2,fractal_point_3,fractal_point_4]
-
+    point_list = [fractal_point_1,fractal_point_2,fractal_point_3]
 
     # Rotate point first
 
@@ -95,7 +100,7 @@ plt.show()
 
 
 
-iteration = 7
+iteration = 1
 
 third_point = (2,0)
 
@@ -112,7 +117,7 @@ while count < len(working_points)-1:
 
 print(pair_working_points)
 
-iteration_max = 7
+iteration_max = 8
 
 iteration_count = 0
 
