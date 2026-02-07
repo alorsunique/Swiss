@@ -1,5 +1,4 @@
-# Automatically moves output from Stable Diffusion
-
+# Automatically moves output from Stable Diffusion and ComfyUI
 
 import os
 import shutil
@@ -23,9 +22,11 @@ with open(hiretsuna_pointer_text, "r") as hiretsuna_pointer_lines:
     path_list = hiretsuna_pointer_lines.readlines()
 
 creation_dir = Path(str(path_list[0]).replace('\n', '').replace('"', ''))
-refine_dir = Path(str(path_list[2]).replace('\n', '').replace('"', ''))
+refine_dir = Path(str(path_list[1]).replace('\n', '').replace('"', ''))
+betwixt_dir = Path(str(path_list[2]).replace('\n', '').replace('"', ''))
 
-output_dir = Path(str(path_list[1]).replace('\n', '').replace('"', ''))
+sd_output_dir = Path(str(path_list[3]).replace('\n', '').replace('"', ''))
+cu_output_dir = Path(str(path_list[4]).replace('\n', '').replace('"', ''))
 
 
 def get_next_run_time(minute_root, interval_minute):
@@ -35,8 +36,8 @@ def get_next_run_time(minute_root, interval_minute):
     minute_mark = int(time.strftime("%M", time.localtime(current_time)))
     second_mark = int(time.strftime("%S", time.localtime(current_time)))
 
-    minute_root = minute_root
-    interval_minute = interval_minute
+    # minute_root = minute_root
+    # interval_minute = interval_minute
 
     next_minute = minute_root + ((((minute_mark - minute_root) // interval_minute) + 1) * interval_minute)
 
@@ -50,7 +51,9 @@ def get_next_run_time(minute_root, interval_minute):
 
 
 minute_root = 0
-interval_minute = 3
+interval_minute = 1
+
+cu_exclusion_list = ['_output_images_will_be_put_here']
 
 sleep_second = get_next_run_time(minute_root, interval_minute) - time.time()
 time.sleep(sleep_second)
@@ -58,29 +61,64 @@ print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
 while True:
 
-    for entry in output_dir.rglob('*'):
-        if entry.is_file():
-            source_file = entry
-            shutil.move(source_file, creation_dir)
+    creation_going_check = False
 
-    modtime.preliminary_naming(creation_dir)
+    for entry in sd_output_dir.rglob('*'):
+        # print(entry)
+        # print(entry.suffix)
+        # print(type(entry.suffix))
+        if entry.suffix == '.tmp':
+            creation_going_check = True
 
-    indicator = ""
-    if not indicator == "":
-        indicator = f"{indicator}_"
 
-    modtime.mod_renaming(creation_dir, indicator)
 
-    modtime.preliminary_naming(refine_dir)
 
-    indicator = "Refine"
-    if not indicator == "":
-        indicator = f"{indicator}_"
+    # print(f'Creation Status: {creation_going_check}')
 
-    modtime.mod_renaming(refine_dir, indicator)
+    if not creation_going_check:
 
-    for entry in output_dir.iterdir():
-        shutil.rmtree(entry)
+        # Move files from SD to creation
+        for entry in sd_output_dir.rglob('*'):
+            if entry.is_file():
+                source_file = entry
+                shutil.move(source_file, creation_dir)
+
+        # Remove the folders in SD output
+        for entry in sd_output_dir.iterdir():
+            shutil.rmtree(entry)
+
+        # Move files from CU to creation
+        for entry in cu_output_dir.rglob('*'):
+            if entry.is_file() and entry.name not in cu_exclusion_list:
+                source_file = entry
+                shutil.move(source_file, creation_dir)
+
+        # Rename Betwixt
+        modtime.preliminary_naming(betwixt_dir)
+
+        indicator = ""
+        if not indicator == "":
+            indicator = f"{indicator}_"
+
+        modtime.mod_renaming(betwixt_dir, indicator)
+
+        # Rename Creation
+        modtime.preliminary_naming(creation_dir)
+
+        indicator = ""
+        if not indicator == "":
+            indicator = f"{indicator}_"
+
+        modtime.mod_renaming(creation_dir, indicator)
+
+        # Rename Refine
+        modtime.preliminary_naming(refine_dir)
+
+        indicator = "Refine"
+        if not indicator == "":
+            indicator = f"{indicator}_"
+
+        modtime.mod_renaming(refine_dir, indicator)
 
     sleep_second = get_next_run_time(minute_root, interval_minute) - time.time()
     time.sleep(sleep_second)
