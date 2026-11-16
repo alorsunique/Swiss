@@ -15,7 +15,7 @@ with open("Resources_Path.txt", "r") as resources_text:
     resources_dir = Path(str(resources_text.readline()).replace('"', ''))
 
 video_folder_dir = resources_dir / "Video"
-workspace_dir = resources_dir / "Temporary Workspace"
+workspace_dir = video_folder_dir / "Temporary Workspace"
 
 # Changes the working directory to the workspace
 os.chdir(workspace_dir)

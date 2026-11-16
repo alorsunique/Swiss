@@ -1,29 +1,33 @@
-from pathlib import Path
-import time
+import string
+
+lowercase_letters = list(string.ascii_lowercase)
+print(lowercase_letters)
 
 
-def get_next_run_time(minute_root, interval_minute):
 
-    current_time = time.time()
+input_string = input()
 
-    # hour_mark = int(time.strftime("%H", time.localtime(current_time)))
-    minute_mark = int(time.strftime("%M", time.localtime(current_time)))
-    second_mark = int(time.strftime("%S", time.localtime(current_time)))
+word_list = []
 
-    minute_root = minute_root
-    interval_minute = interval_minute
+segment_word_count = 0
+for word in input_string.split(' '):
+    segment_word_count += 1
+    new_word = ''
+    count = 0
+    for char in word:
+        count += 1
+        # print(lowercase_letters.index(char))
+        index = lowercase_letters.index(char)
+        print(index)
+        print(count)
+        print(segment_word_count)
+        new_index = ((count*index) + 2**index + count + (count*segment_word_count)) % 26
+        print(new_index)
 
-    next_minute = minute_root + ((((minute_mark-minute_root) // interval_minute) + 1) * interval_minute)
+        new_word += lowercase_letters[new_index]
 
-    if next_minute >= 60:
-        # This resets it back to the hour
-        next_run_time = current_time + ((60 - minute_mark) * 60 - second_mark)
-    else:
-        next_run_time = current_time + ((next_minute - minute_mark) * 60 - second_mark)
+    word_list.append(new_word)
 
-    return next_run_time
+out_string = ' '.join(word for word in word_list)
 
-if __name__ == "__main__":
-    next_run_time = get_next_run_time(0,2)
-    print(next_run_time)
-    print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(next_run_time)))
+print(out_string)

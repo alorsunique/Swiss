@@ -148,6 +148,66 @@ def RDT_file_sort(input_to_check_dir, copy_dir):
 
 
 
+def screenshot_file_sort(screenshot_in_dir, screenshot_copy_dir):
+
+    for file in screenshot_in_dir.iterdir():
+
+        source_path = file
+        copy_path = screenshot_copy_dir / file.name
+
+        if not copy_path.exists():
+            shutil.move(source_path, copy_path)
+
+
+
+def camera_file_sort(camera_in_dir, camera_raw_dir, camera_vid_dir, lumiere_in_dir):
+
+    for file in camera_in_dir.iterdir():
+
+        source_path = file
+
+        if file.suffix == '.dng':
+
+            copy_path = camera_raw_dir / file.name
+
+        elif file.suffix == '.mp4':
+
+            copy_path = camera_vid_dir / file.name
+
+        else:
+
+            copy_path = lumiere_in_dir / file.name
+
+        if not copy_path.exists():
+            shutil.move(source_path, copy_path)
+
+
+
+def edited_pic_file_sort(edit_in_dir_list, edit_hold_dir):
+
+    for edit_in_dir in edit_in_dir_list:
+
+        for file in edit_in_dir.iterdir():
+
+            source_path = file
+            copy_path = edit_hold_dir / file.name
+
+            similar_count = 0
+
+            if not copy_path.exists():
+                shutil.move(source_path, copy_path)
+
+            else:
+                while True:
+                    print(f'File Name Exists. Adding Number')
+                    similar_count += 1
+                    new_copy_path = edit_hold_dir / f'{file.stem}_{similar_count}{file.suffix}'
+
+                    if not new_copy_path.exists():
+                        shutil.move(source_path, new_copy_path)
+
+                        break
+
 
 
 
@@ -187,6 +247,30 @@ def main():
     snapinsta_file_sort(inbound_download_dir, copy_dir)
     storysaver_file_sort(inbound_download_dir, copy_dir)
 
+
+    screenshot_in_dir = inbound_phone_dir / 'Screenshots'
+    screenshot_copy_dir = Path(config_content['screenshot_copy_dir'])
+
+    screenshot_file_sort(screenshot_in_dir, screenshot_copy_dir)
+
+
+    camera_in_dir = inbound_phone_dir / 'Camera'
+    camera_raw_dir = inbound_phone_dir / 'Camera RAW'
+    camera_vid_dir = inbound_phone_dir / 'Camera Video'
+    lumiere_in_dir = Path(config_content['lumiere_dir']) / 'Input'
+
+    camera_file_sort(camera_in_dir, camera_raw_dir, camera_vid_dir, lumiere_in_dir)
+
+
+    edit_in_dir_list = [
+        inbound_phone_dir / 'Adobe Express',
+        inbound_phone_dir / 'Lightroom',
+        inbound_phone_dir / 'Snapseed'
+    ]
+
+    lumiere_edit_hold_dir = Path(config_content['lumiere_dir']) / 'Edit Hold'
+
+    edited_pic_file_sort(edit_in_dir_list, lumiere_edit_hold_dir)
 
 
 if __name__ == "__main__":

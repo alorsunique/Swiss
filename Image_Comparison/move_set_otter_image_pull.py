@@ -126,7 +126,7 @@ def main():
 
     print(move_set_dir)
 
-    otter_dir = Path("F:\Projects\Otter")
+    otter_dir = Path("E:\Projects\Otter")
 
     post_list = []
 

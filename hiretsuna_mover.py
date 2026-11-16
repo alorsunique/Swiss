@@ -26,7 +26,15 @@ refine_dir = Path(str(path_list[1]).replace('\n', '').replace('"', ''))
 betwixt_dir = Path(str(path_list[2]).replace('\n', '').replace('"', ''))
 
 sd_output_dir = Path(str(path_list[3]).replace('\n', '').replace('"', ''))
-cu_output_dir = Path(str(path_list[4]).replace('\n', '').replace('"', ''))
+cu_input_dir = Path(str(path_list[4]).replace('\n', '').replace('"', ''))
+cu_output_dir = Path(str(path_list[5]).replace('\n', '').replace('"', ''))
+
+minute_root = int( str(path_list[6]) )
+interval_minute = int( str(path_list[7]) )
+
+print(f'Minute Root: {minute_root}')
+print(f'Interval Minute: {interval_minute}')
+
 
 
 def get_next_run_time(minute_root, interval_minute):
@@ -50,14 +58,48 @@ def get_next_run_time(minute_root, interval_minute):
     return next_run_time
 
 
-minute_root = 0
-interval_minute = 1
+# minute_root = 0
+# interval_minute = 1
 
-cu_exclusion_list = ['_output_images_will_be_put_here']
+cu_exclusion_list = ['example.png', '_output_images_will_be_put_here']
+
+
+
+
+
+# Input clear
+
+print(f'Clearing CU Input')
+
+for entry in cu_input_dir.iterdir():
+
+    if entry.is_file() and entry.name not in cu_exclusion_list:
+
+        os.remove(entry)
+
+
+
+
+
+
+
+
+
+
+
 
 sleep_second = get_next_run_time(minute_root, interval_minute) - time.time()
 time.sleep(sleep_second)
 print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+
+
+
+
+
+
+
+
 
 while True:
 
@@ -81,7 +123,11 @@ while True:
         for entry in sd_output_dir.rglob('*'):
             if entry.is_file():
                 source_file = entry
-                shutil.move(source_file, creation_dir)
+
+                check_path = creation_dir / source_file.name
+                if not check_path.exists():
+                    shutil.move(source_file, creation_dir)
+
 
         # Remove the folders in SD output
         for entry in sd_output_dir.iterdir():
@@ -91,7 +137,10 @@ while True:
         for entry in cu_output_dir.rglob('*'):
             if entry.is_file() and entry.name not in cu_exclusion_list:
                 source_file = entry
-                shutil.move(source_file, creation_dir)
+
+                check_path = creation_dir / source_file.name
+                if not check_path.exists():
+                    shutil.move(source_file, creation_dir)
 
         # Rename Betwixt
         modtime.preliminary_naming(betwixt_dir)
